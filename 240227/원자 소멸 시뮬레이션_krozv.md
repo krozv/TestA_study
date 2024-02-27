@@ -1,138 +1,216 @@
-# 원자 소멸 시뮬레이션
-
-## 완전탐색
-
-while문 사용 -> 원자가 1개도 남지 않을 때까지 반복 -> 시간초과 뜰 것 같은데
-1초에 한번씩 전체 이동 확인
-위치하려는 자리에 원자가 있을 경우 +1
-1 이상인 원자 전부 삭제
-원자가 한 개도 없을때까지 반복
-
+# 5648. 원자 소멸 시뮬레이션 
+### 첫 시도
+9/50 시간초과...
 ```python
-def collide():
-    pass
-import sys
-sys.stdin = open('input.txt', 'r')
+# 뭔가 0.5단위로 끊어서 움직여야 할듯
+#방향 상(0), 하(-1),좌(2),우(3)
+di = [0.5,-0.5,0,0]
+dj = [0,0,-0.5,0.5]
+
 T = int(input())
-for t in range(1, T+1):
+for tc in range(1, 1+T):
     N = int(input())
-    arr = [[0] * 2001 for _ in range(2001)]
-    delta = [[-1, 0], [1, 0], [0, -1], [0, 1]]
-    atom = {}
-    for i in range(N):
-        x, y, d, K = map(int, input().split())
-        atom[i+1] = [d, K]  # 원자번호를 key로 하여 delta와 K 보유에너지 저장
-        arr[x+1000][y+1000] = -(i+1)    # -key를 저장
-    print(atom)
-    print(arr)
+    data = [list(map(int, input().split())) for _ in range(N)] #datum은 순서대로 x위치,y위치,이동방향,보유 에너지 k
+
     energy = 0
-    while sum(arr) != 0:
-        collide()
-    print(energy)
+    for _ in range(4000): #대에충 4000번 반복 최대 위치차가 2000이고 0.5씩 움직인다면 4000번 움직여야 만날수나 있지..
+        for datum in data:
+            datum[0] += di[datum[2]]
+            datum[1] += dj[datum[2]]
+
+        for datum1 in data:
+            for datum2 in data:
+                if datum1[0] == datum2[0] and datum1[1] == datum2[1] and datum1 != datum2:
+                    energy += datum1[3] + datum2[3] #에너지 더해주기
+                    datum1[3] = 0 #1번 원자의 에너지 없애주기
+                    datum2[3] = 0 #2번 원자의 에너지 없애주기
+                    
+                    #없애줄 리스트를 작성후 한번에 제거?
+                    
+                    
+    print(f'#{tc} {int(energy)}')
 ```
-## greedy
+일단 시간좀 줄여야 할듯. 답은 맞게 나옴
 
-원자 간의 거리가 제일 짧은 것부터 찾아서 충돌시키고 없앰
-계속 돌려
-또 짧은 거 찾아서 충돌시키고 없앰
-양방향을 굳이 봐야하나?
-row:
-    원자가 존재하고 and delta의 순서가 2, 3일 경우 충돌
-col:
-    원자가 존재하고 and delta의 순서가 0, 1일 경우 충돌
-그냥 기울기 계산해서 빼버리면?
-
+### 2차 시도
+8/50 시간초과.. + 테스트케이스 1번도 틀림
 ```python
+di = [0.5,-0.5,0,0]
+dj = [0,0,-0.5,0.5]
 
-
-def inclination(n):
-    x1, y1 = atom[n][0]
-    inc = []
-    for i in range(n+1, N+1):
-        x2, y2 = atom[i][0]
-        # 기울기가 8인 경우
-        if x2 == x1:
-            d = abs(y2 - y1) / 2
-            if y1 < y2 and [atom[n][1], atom[i][1]] == [0, 1]:
-                inc.append([i, d])
-            elif y1 > y2 and [atom[n][1], atom[i][1]] == [1, 0]:
-                inc.append([i, d])
-        # 그 외
-        else:
-            a = (y2-y1)/(x2-x1)
-            # 기울기가 0인 경우
-            if a == 0:
-                d = abs(x2 - x1) / 2
-                if x1 < x2 and [atom[n][1], atom[i][1]] == [3, 2]:
-                    inc.append([i, d])
-                elif x1 > x2 and [atom[n][1], atom[i][1]] == [2, 3]:
-                    inc.append([i, d])
-            # 기울기가 -1인 경우
-            elif a == -1:
-                d = abs(y2 - y1)
-                if y1 > y2 and [atom[n][1], atom[i][1]] in [[3, 0], [1, 2]]:
-                    inc.append([i, d])
-                elif y1 < y2 and [atom[n][1], atom[i][1]] in [[0, 3], [2, 1]]:
-                    inc.append([i, d])
-            # 기울기가 1인 경우
-            elif a == 1:
-                d = abs(y2 - y1)
-                if y1 > y2 and [atom[n][1], atom[i][1]] in [[2, 0], [1, 3]]:
-                    inc.append([i, d])
-                elif y1 < y2 and [atom[n][1], atom[i][1]] in [[0, 2], [3, 1]]:
-                    inc.append([i, d])
-    inc_dict.setdefault(n, inc)     # {원자번호: [부딪힌 원자번호, 원자 간 거리]}
-
-import sys
-sys.stdin = open('input.txt', 'r')
 T = int(input())
-for t in range(1, T+1):
+for tc in range(1, 1+T):
     N = int(input())
-
-    atom = {}
-    for i in range(N):
-        x, y, D, K = map(int, input().split())
-        atom[i+1] = [[x, y], D, K]  # 원자번호를 key로 하여 delta와 K 보유에너지 저장
+    data = [list(map(int, input().split())) for _ in range(N)] #datum은 순서대로 x위치,y위치,이동방향,보유 에너지 k
 
     energy = 0
-    inc_dict = {}
-    # 원자 간 기울기를 계산
-    for i in range(1, N):
-        inclination(i)
+    for _ in range(4000): #4000번 반복 최대 위치차가 2000이고 0.5씩 움직인다면 4000번 움직여야 만날수나 있지..
+        for datum in data:
+            datum[0] += di[datum[2]]
+            datum[1] += dj[datum[2]]
 
-    #
-    while True:
-        distance = []
-        for inc in inc_dict.values():
-            # inc : [i번 원자와 충돌한 원자 번호, 원자 거리]
-            # 예) inc = [[2, 1000.0], [3, 1000], [4, 1000]]
-            for dis in inc:
-                # dis : 충돌한 원자 거리
-                distance.append(dis[-1])
-        break
+        for i in range(N-1):
+            for j in range(i+1, N):
+                if data[i][0] == data[j][0] and data[0][1] == data[j][1]:
+                    energy += data[i][3] + data[j][3] #에너지 더해주기
+                    data[i][3] = 0 #1번 원자의 에너지 없애주기(중복되서 더해지는 일이 없어야 하므로)
+                    data[j][3] = 0 #2번 원자의 에너지 없애주기
+    print(f'#{tc} {int(energy)}')
+```
 
-    # 충돌 거리가 짧은 순서로 정렬
-    distance = list(set(distance))
-    distance.sort()
+음.. remove하면서 시간을 줄여야 하나???
+###3차 시도
+9/50 테스트케이스 돌아가는 시간은 조금 줄은 듯
+```python
+di = [0.5, -0.5, 0, 0]
+dj = [0, 0, -0.5, 0.5]
 
-    # 충돌한 원자들 구분하는 배열 (=visited)
-    collide = [0] * (N + 1)
+T = int(input())
+for tc in range(1, 1 + T):
+    N = int(input())
+    data = [list(map(int, input().split())) for _ in range(N)]  # datum은 순서대로 x위치,y위치,이동방향,보유 에너지 k
 
-    for dis in distance:
-        # dis : 충돌한 원자 거리
-        for inc in inc_dict.items():
-            # inc : (i번 원자, [i번 원자와 충돌한 원자 번호, 원자 거리])
-            if not collide[inc[0]]:    # i번 원자가 충돌하지 않았다면
-                for other in inc[1]:    # 다른 원자를 하나씩 꺼내서 계산
-                    # 충돌이 있는 경우: 충돌한 원자 거리(dis)가 같고, 해당 원자가 충돌하지 않은 원자일 경우
-                    if dis == other[-1] and not collide[other[0]]:
-                        # i번 원자에 방문표시 해주고, 에너지 추가
-                        if collide[inc[0]] == 0:
-                            energy += (atom[inc[0]][2])
-                            collide[inc[0]] = 1
-                        # i번 원자와 충돌한 원자에 방문표시 하고, 에너지 추가
-                        collide[other[0]] = 1
-                        energy += (atom[other[0]][2])
+    energy = 0
 
-    print(f'#{t} {energy}')
+    remove_index = []
+    for _ in range(4000):  # 대에충 4000번 반복 최대 위치차가 2000이고 0.5씩 움직인다면 4000번 움직여야 만날수나 있지..
+        for datum in data:
+            datum[0] += di[datum[2]]
+            datum[1] += dj[datum[2]]
+
+        for datum1 in data:
+            for j,datum2 in enumerate(data):
+                if datum1[0] == datum2[0] and datum1[1] == datum2[1] and datum1 != datum2:
+                    energy += datum1[3] + datum2[3]  # 에너지 더해주기
+                    datum1[3] = 0  # 1번 원자의 에너지 없애주기
+                    datum2[3] = 0
+                    # 없애줄 인덱스 리스트를 작성후 한번에 제거?
+                    remove_index.append(j)
+
+        while remove_index:
+            remove_index.sort()
+            idx = remove_index.pop()
+            data.pop(idx)
+    print(f'#{tc} {energy}')
+```
+
+### 4차 시도
+9/50 시간초과
+```python
+di = [0.5, -0.5, 0, 0]
+dj = [0, 0, -0.5, 0.5]
+
+T = int(input())
+for tc in range(1, 1 + T):
+    N = int(input())
+    data = [list(map(int, input().split())) for _ in range(N)]  # datum은 순서대로 x위치,y위치,이동방향,보유 에너지 k
+
+    energy = 0
+
+    remove_index = []
+    for _ in range(4000):  # 대에충 4000번 반복 최대 위치차가 2000이고 0.5씩 움직인다면 4000번 움직여야 만날수나 있지..
+        for datum in data:
+            datum[0] += di[datum[2]]
+            datum[1] += dj[datum[2]]
+        for datum1 in data:
+            for j,datum2 in enumerate(data):
+                if datum1[0] == datum2[0] and datum1[1] == datum2[1] and datum1 != datum2 and (datum1[3] != 0 or datum2[3] != 0):
+                    energy += datum1[3] + datum2[3]  # 에너지 더해주기
+                    datum1[3] = 0  # 1번 원자의 에너지 없애주기
+                    datum2[3] = 0
+                    # 없애줄 인덱스 리스트를 작성후 한번에 제거?
+                    remove_index.append(j)
+                elif datum2[0] > 1000 or datum2[0] <-1000 or datum2[1]>1000 or datum2[1]<-1000:
+                    remove_index.append(j)
+
+        while remove_index:
+            print(remove_index)
+            remove_index = list(set(remove_index))
+            remove_index.sort()
+            idx = remove_index.pop()
+            data.pop(idx)
+    print(f'#{tc} {energy}')
+```
+
+### 5차
+딕셔너리로 같은 위치에 있는 애들 넣어서 처리할라 했는데...
+
+9/50 fail
+```python
+di = [0.5, -0.5, 0, 0]
+dj = [0, 0, -0.5, 0.5]
+T = int(input())
+for tc in range(1, 1 + T):
+    N = int(input())
+    data = [list(map(int, input().split())) for _ in range(N)]  # datum은 순서대로 x위치,y위치,이동방향,보유 에너지 k
+    energy = 0
+    remove_index = []
+    repeat = 0
+    while repeat < 4000 and len(data)>1:  # 대에충 4000번 반복 최대 위치차가 2000이고 0.5씩 움직인다면 4000번 움직여야 만날수나 있지..
+        repeat += 1
+        for datum in data:
+            datum[0] += di[datum[2]]
+            datum[1] += dj[datum[2]]
+        location = {}
+        for datum in data: #location에 같은 위치를키로, 같은 위치 녀석들을 묶어서 벨류 값으로 이용
+            try:
+                location[(datum[0], datum[1])].append(datum)
+            except:
+                location[(datum[0],datum[1])] = [datum]
+
+        data = []
+        for l in location:
+            if len(location[l]) >= 2: #벨류가 2이상, 즉 같은 위치에 여러 원자가 있다면
+                for atom in location[l]:
+                    energy += atom[3]
+            else:#정상범위내에 있고, 현재 위치에 원자가 1개만 있다면 다시 data에 넣어준다.
+                if -1000 <= location[l][0][0] <= 1000 and -1000 <= location[l][0][1] <= 1000:
+                    data.append(location[l][0])
+
+    print(f'#{tc} {energy}')
+
+```
+
+### 아오... 복붙 코드
+pass
+```python
+T = int(input())
+for tc in range(1, 1+T):
+    n = int(input())
+    atom = [list(map(int, input().split())) for _ in range(n)]
+    # 격자 중간에서 만날 수도 있기 때문에 0.5초 단위로 이동한다고 가정했음
+    d = [(0, 0.5), (0, -0.5), (-0.5, 0), (0.5, 0)]
+
+    result = 0
+
+    # 아톰 개수가 2개 이하가 되면 만날 아톰이 없으니까 종료
+    while len(atom) >= 2:
+        # 모든 아톰을 0.5초 단위로 이동시킨다
+        for i in range(len(atom)):
+            atom[i][0] = atom[i][0] + d[atom[i][2]][0]
+            atom[i][1] = atom[i][1] + d[atom[i][2]][1]
+
+        # 좌표를 딕셔너리로 표현
+        location = {}
+        # 각 아톰들을 순회하면서 좌표: [아톰들]의 형태로 넣어준다.
+        for a in atom:
+            try:
+                location[(a[0], a[1])].append(a)
+            except Exception:
+                location[(a[0], a[1])] = [a]
+
+        # 아톰 리스트를 초기화하고
+        atom = []
+        for l in location:
+
+            if len(location[l]) >= 2:
+                # 만약 같은 위치에 아톰이 여러개라면 결과값에 아톰의 에너지들을 결과값에 넣어주고
+                for at in location[l]:
+                    result += at[3]
+            else:
+                # 위치에 아톰이 1개라면 범위내에 있는 아톰들은 아톰 리스트에 다시 넣어준다.
+                if -1000 <= location[l][0][0] <= 1000 and -1000 <= location[l][0][1] <= 1000:
+                    atom.append(location[l][0])
+
+    print(f'#{tc}', result)
 ```

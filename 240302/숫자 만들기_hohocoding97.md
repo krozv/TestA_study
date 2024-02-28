@@ -37,8 +37,8 @@ for tc in range(1, 1+T):
 -3//2 는 `-2`가 나옴. 원래 `-3/2 = -1.5`이므로 결과 값이 `-1`이 나와야 함. 따라서 
 ```python
 if cal >= 0:
-            dfs(i+1, plus, sub, mul, div-1, cal//nums[i]) #소수점 아래 버린다고 나와있음
-        else:
-            dfs(i+1, plus, sub, mul, div-1, -((-cal)//nums[i]))
+    dfs(i+1, plus, sub, mul, div-1, cal//nums[i]) #소수점 아래 버린다고 나와있음
+else:
+    dfs(i+1, plus, sub, mul, div-1, -((-cal)//nums[i]))
 ```
 맞춤으로 코드 변경

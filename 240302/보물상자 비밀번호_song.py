@@ -5,7 +5,7 @@ https://swexpertacademy.com/main/talk/solvingClub/problemView.do?solveclubId=AY2
 def rotate(i):
     global result
 
-    for i in range(0, n-share-1, share): # 한 변의 길이만큼 slicing
+    for i in range(0, n-share+1, share): # 한 변의 길이만큼 slicing
         num = int(''.join(number[i:i+share]), 16) # 각 값을 10진수로 변경
         if num not in result: # 값이 없다면 추가
             result.append(num)

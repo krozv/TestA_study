@@ -19,4 +19,19 @@ max_val = 0
 f(0,0,0)
 print(max_val)
 ```
+### DP
 
+```python
+import sys
+input = sys.stdin.readline
+
+N,K = map(int, input().split())
+WV = [list(map(int,input().split())) for _ in range(N)]
+
+dp = [0 for _ in range(K+1)] #0~K번째까지
+for w, v in WV:
+    for i in range(K, w-1, -1):# K(최대무게) ~ w(현재거 무게)까지 1씩 작아지며 순회
+        dp[i] = max(dp[i], dp[i-w]+v)
+print(dp[-1])
+
+```

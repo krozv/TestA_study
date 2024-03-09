@@ -20,11 +20,7 @@ for i in range(n):
     remain_w += info[i][0]
 
 def combination(i):
-    global max_v
-    global remain_v
-    global remain_w
-    global w
-    global v
+    global max_v, remain_v, remain_w, w, v
     if v + remain_v <= max_v:
         return
     if w + remain_w <= k:

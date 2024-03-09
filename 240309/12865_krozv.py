@@ -10,11 +10,20 @@ def perm(i, s, v):
     v: 총 가치 합
     """
     global max_v
-    if s > K:
-        print(max_v)
+    
+    if s >= K:
+        if s > K:
+            v -= info[i][1]
         if max_v < v:
             max_v = v
         return
+
+    if i == N-1:
+        if max_v < v:
+            max_v = v
+        return
+
+
     for j in range(i, N):
         if visited[j] == 0:
             visited[j] = 1
@@ -32,3 +41,4 @@ for _ in range(N):
 visited = [0] * N
 max_v = 0
 perm(0, 0, 0)
+print(max_v)

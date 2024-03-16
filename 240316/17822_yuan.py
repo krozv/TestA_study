@@ -46,7 +46,7 @@ def f2(rot_arr):
             new_arr[i][M-1] = 0
 
     #만약 인접수가 한개도 없었을 경우
-    if new_arr == rot_arr and cnt!=0:
+    if new_arr == rot_arr and cnt:
         avg= total/ cnt
 
         for i in range(N):

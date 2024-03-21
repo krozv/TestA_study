@@ -1,3 +1,3 @@
 # A형 대비 스터디
 
-https://github.com/krozv/algorithm_study.git으로 이동함
+<a href="https://github.com/krozv/algorithm_study.git">으로 이동함
